@@ -22,16 +22,8 @@ public class SecurityConfiguration {
 
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/users/**",
-//            "/v2/api-docs",
-//            "/v3/api-docs",
-//            "/v3/api-docs/**",
-//            "/swagger-resources",
-//            "/swagger-resources/**",
-//            "/configuration/ui",
-//            "/configuration/security",
-//            "/swagger-ui/**",
-//            "/webjars/**",
-//            "/swagger-ui.html"
+//            "/api/v1/products/**",
+
     };
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
@@ -52,7 +44,11 @@ public class SecurityConfiguration {
                                 .anyRequest()
                                 .authenticated()
                 )
+                // This line configures how the session is managed in your application.
+                // SessionCreationPolicy.STATELESS: This means that the application will not create or use an HTTP session to store the user's security context.
+                // Stateless: Every request must be independently authenticated because no session state is maintained between request
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // This specifies which authentication provider is responsible for verifying user credentials and providing the authenticated user's details.
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 //                .logout(logout ->

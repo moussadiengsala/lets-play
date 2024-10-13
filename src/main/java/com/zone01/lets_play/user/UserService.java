@@ -87,30 +87,6 @@ public class UserService {
                 .build();
     }
 
-
-
-//    public ResponseEntity<User> updateUser(String id, User userDetails) {
-//        Optional<User> optionalUser = userRepository.findById(id);
-//        if (optionalUser.isPresent()) {
-//            User user = optionalUser.get();
-//            user.setName(userDetails.getName());
-//            user.setEmail(userDetails.getEmail());
-//            user.setPassword(hashPassword(userDetails.getPassword())); // Hash the new password
-//            user.setRole(userDetails.getRole());
-//            User updatedUser = userRepository.save(user);
-//            return ResponseEntity.ok(updatedUser);
-//        }
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//    }
-
-//    public ResponseEntity<Void> deleteUser(String id) {
-//        if (userRepository.existsById(id)) {
-//            userRepository.deleteById(id);
-//            return ResponseEntity.noContent().build();
-//        }
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//    }
-
     // Add a method to hash passwords (You will need to implement this)
     private String hashPassword(String password) {
         // Implement password hashing logic (e.g., BCrypt)
