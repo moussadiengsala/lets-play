@@ -5,6 +5,7 @@ import com.zone01.lets_play.utils.Response;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -30,27 +31,41 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public AuthenticationResponse createUser(@Valid @RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<Response<AuthenticationResponse>> createUser(@Valid @RequestBody User user) {
+        AuthenticationResponse authenticationResponse = userService.createUser(user);
+        Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
+                .status(HttpStatus.CREATED.value())
+                .data(authenticationResponse)
+                .message("User has been register successfully")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
-    public AuthenticationResponse authentificate(@Valid @RequestBody LoginRequest user) {
-        return userService.authentificate(user);
+    public ResponseEntity<Response<AuthenticationResponse>> authentificate(@Valid @RequestBody LoginRequest user) {
+        AuthenticationResponse authenticationResponse = userService.authentificate(user);
+        Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
+                .status(HttpStatus.OK.value())
+                .data(authenticationResponse)
+                .message("User has been login successfully")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Response<Map<String, String>> HandleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<String, String>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        return new Response<Map<String, String>>(400, errors, "");
-    }
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Response<Map<String, String>> HandleValidationException(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<String, String>();
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//
+//        return new Response<Map<String, String>>(400, errors, "");
+//    }
 
 
 //    @PutMapping("/{id}")

@@ -24,12 +24,12 @@ public class ProductsController {
         return productsService.getAllProducts();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Products> getProductById(@PathVariable String id) {
-        return productsService.getProductById(id)
-                .map(product -> ResponseEntity.ok(product))
-                .orElse(ResponseEntity.notFound().build());
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<Products> getProductById(@PathVariable String id) {
+//        return productsService.getProductById(id)
+//                .map(product -> ResponseEntity.ok(product))
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 
     @PostMapping
     public ResponseEntity<Products> createProduct(@Validated @RequestBody Products product) {
@@ -51,22 +51,23 @@ public class ProductsController {
         return ResponseEntity.noContent().build();
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Response<Map<String, String>> HandleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<String, String>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        return new Response<Map<String, String>>(400, errors, "");
-    }
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Response<Map<String, String>>> HandleValidationException(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//
+//        ex.getBindingResult().getAllErrors().forEach((error) -> {
+//            String fieldName = ((FieldError) error).getField();
+//            String errorMessage = error.getDefaultMessage();
+//            errors.put(fieldName, errorMessage);
+//        });
+//
+//        Response<Map<String, String>> response = Response.<Map<String, String>>builder()
+//                .status(HttpStatus.BAD_REQUEST.value())
+//                .data(errors)
+//                .message("Validation Failed")
+//                .build();
+//
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+//    }
 }
-
-
-//{
-//        "access_token": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyODc2OTk0MywiZXhwIjoxNzI4ODU2MzQzfQ.eGdmrbLqwCg82Y_nymaehIDVJh20JRd-EJ8a-cbSGzwAM7P6NAzMYbEap0PYl8Ej",
-//        "refresh_token": "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyODc2OTk0MywiZXhwIjoxNzI5Mzc0NzQzfQ.Sz28E-vem1NfuivbozpS6Yg5GHAWW0I2T8uFStPqklEE1k-LfJC-vp7SehrKDQNF"
-//        }
