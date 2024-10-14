@@ -91,8 +91,6 @@ public class AppExceptionsHandler {
         errorDetail.setProperty("error_code", "INTERNAL_ERROR");
         return errorDetail;
     }
+
+
 }
-
-
-//eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyODkxMDY1NCwiZXhwIjoxNzI4OTk3MDU0fQ.khZAMl3lVfMniFJiJLr8OvlE4Pe5wVJlCW9toF-p2KU6zQMUOzUsRp4jDBBh5961
-//eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzMUBnbWFpbC5jb20iLCJpYXQiOjE3Mjg5MTE2NjAsImV4cCI6MTcyODk5ODA2MH0.2ey_YkEH5yLuuFKp7CBa-OdI8E611QEFx-K4nljyQ2Qj8CgZ0xzu4BNO_fFfIGZ6

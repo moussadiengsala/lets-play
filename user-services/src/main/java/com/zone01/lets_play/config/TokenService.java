@@ -1,7 +1,6 @@
-package com.zone01.lets_play.token;
+package com.zone01.lets_play.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zone01.lets_play.config.JwtService;
 import com.zone01.lets_play.user.User;
 import com.zone01.lets_play.user.UserRepository;
 import com.zone01.lets_play.utils.AuthenticationResponse;
@@ -17,36 +16,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class TokenService {
     private final UserRepository repository;
-    private final TokenRepository tokenRepository;
-//    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-//    private final AuthenticationManager authenticationManager;
 
-    public void saveUserToken(User user, String jwtToken) {
-        var token = Token.builder()
-                .user(user)
-                .token(jwtToken)
-                .expired(false)
-                .revoked(false)
-                .build();
-        tokenRepository.save(token);
-    }
-
-    public void revokeAllUserTokens(User user) {
-        var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
-        if (validUserTokens.isEmpty()) return;
-
-        validUserTokens.forEach(token -> {
-            token.setExpired(true);
-            token.setRevoked(true);
-        });
-        tokenRepository.saveAll(validUserTokens);
-    }
-
-    public void refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws IOException {
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userEmail;
@@ -61,8 +33,6 @@ public class TokenService {
                     .orElseThrow();
             if (jwtService.isTokenValid(refreshToken, user)) {
                 var accessToken = jwtService.generateToken(user);
-                revokeAllUserTokens(user);
-                saveUserToken(user, accessToken);
                 var authResponse = AuthenticationResponse.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)

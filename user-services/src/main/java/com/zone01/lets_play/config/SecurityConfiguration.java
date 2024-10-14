@@ -35,7 +35,7 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers(new String[]{"/api/v1/users/login", "/api/v1/users/register", "/api/v1/token/refresh-token"})
+                        req.requestMatchers(new String[]{"/api/v1/users/auth/**",})
                                 .permitAll()
                                 .requestMatchers("/api/v1/users/profile").hasAnyAuthority(Permission.USER_READ.getPermission(), Permission.ADMIN_READ.getPermission())
                                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").hasAnyAuthority(Permission.ADMIN_READ.getPermission(), Permission.USER_READ.getPermission())

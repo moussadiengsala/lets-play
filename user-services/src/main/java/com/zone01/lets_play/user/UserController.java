@@ -1,7 +1,10 @@
 package com.zone01.lets_play.user;
 
+import com.zone01.lets_play.config.TokenService;
 import com.zone01.lets_play.utils.AuthenticationResponse;
 import com.zone01.lets_play.utils.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +23,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
+    private final TokenService tokenService;
 
     @GetMapping
     public Response<List<User>> getAllUsers() {
@@ -30,7 +35,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<Response<AuthenticationResponse>> createUser(@Valid @RequestBody User user) {
         AuthenticationResponse authenticationResponse = userService.createUser(user);
         Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
@@ -42,7 +47,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<Response<AuthenticationResponse>> authentificate(@Valid @RequestBody LoginRequest user) {
         AuthenticationResponse authenticationResponse = userService.authentificate(user);
         Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
@@ -52,6 +57,16 @@ public class UserController {
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+
+    @PostMapping("/auth/refresh-token")
+    public void refreshToken(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        tokenService.refreshToken(request, response);
     }
 
 //    @ResponseStatus(HttpStatus.BAD_REQUEST)
