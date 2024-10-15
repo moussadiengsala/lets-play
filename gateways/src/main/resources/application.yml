@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: gateways
+  cloud:
+    gateway:
+      routes:
+        - id: user_service
+          uri: lb://users
+          predicates:
+            - Path=/api/v1/users/**
+#        - id: product_service
+#          uri: lb://PRODUCT-SERVICE # Assuming your Product Service is registered in Eureka
+#          predicates:
+#            - Path=/api/v1/products/**
+    discovery:
+      client:
+        simple:
+          instance:
+            user-service:
+              service-url: http://localhost:8081 # Add your User Service URL
+#            product-service:
+#              service-url: http://localhost:8082 # Add your Product Service URL
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8080/eureka/
