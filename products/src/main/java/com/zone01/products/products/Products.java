@@ -1,6 +1,5 @@
-package com.zone01.users.products;
+package com.zone01.products.products;
 
-import com.zone01.users.user.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

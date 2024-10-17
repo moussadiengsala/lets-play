@@ -1,6 +1,7 @@
-package com.zone01.users.products;
+package com.zone01.products.products;
 
-import com.zone01.users.utils.Response;
+import com.zone01.products.utils.Response;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +33,8 @@ public class ProductsController {
 //    }
 
     @PostMapping
-    public ResponseEntity<Products> createProduct(@Validated @RequestBody Products product) {
-        Products createdProduct = productsService.createProduct(product);
+    public ResponseEntity<Products> createProduct(@Validated @RequestBody Products product, HttpServletRequest request) {
+        Products createdProduct = productsService.createProduct(product, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
 

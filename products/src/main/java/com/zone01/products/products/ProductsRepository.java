@@ -1,4 +1,5 @@
-package com.zone01.users.products;
+package com.zone01.products.products;
+
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;

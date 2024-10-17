@@ -1,10 +1,10 @@
-package com.zone01.users.products;
+package com.zone01.products.products;
 
-import com.zone01.users.user.User;
+import com.zone01.products.config.AccessValidation;
+import com.zone01.products.products.User;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,16 +23,18 @@ public class ProductsService {
         return productsRepository.findById(id);
     }
 
-    public Products createProduct(Products product) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
+    public Products createProduct(Products product, HttpServletRequest request) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        User currentUser = (User) authentication.getPrincipal();
+
+        User currentCser = AccessValidation.getCurrentUser(request);
 
         Products newProduct = Products
                 .builder()
                 .name(product.getName())
                 .price(product.getPrice())
                 .description(product.getDescription())
-                .userID(currentUser.getId())
+                .userID(currentCser.getId())
                 .build();
 
         return productsRepository.save(newProduct);
