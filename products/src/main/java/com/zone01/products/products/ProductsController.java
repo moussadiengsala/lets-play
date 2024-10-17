@@ -21,54 +21,61 @@ public class ProductsController {
     private final ProductsService productsService;
 
     @GetMapping
-    public List<Products> getAllProducts() {
-        return productsService.getAllProducts();
+    public ResponseEntity<Response<List<Products>>> getAllProducts() {
+        List<Products> products = productsService.getAllProducts();
+        Response<List<Products>> response = Response.<List<Products>>builder()
+                .status(HttpStatus.OK.value())
+                .data(products)
+                .message("success")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Products> getProductById(@PathVariable String id) {
-//        return productsService.getProductById(id)
-//                .map(product -> ResponseEntity.ok(product))
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<Response<Products>> getProductById(@PathVariable String id) {
+        return productsService.getProductById(id)
+                .map(product -> {
+                    Response<Products> response = Response.<Products>builder()
+                            .status(HttpStatus.OK.value())
+                            .data(product)
+                            .message("success")
+                            .build();
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
+                })
+                .orElseGet(() -> {
+                    Response<Products> response = Response.<Products>builder()
+                            .status(HttpStatus.NOT_FOUND.value())
+                            .data(null)
+                            .message("Product not found")
+                            .build();
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                });
+    }
 
     @PostMapping
-    public ResponseEntity<Products> createProduct(@Validated @RequestBody Products product, HttpServletRequest request) {
+    public ResponseEntity<Response<Products>> createProduct(@Validated @RequestBody Products product, HttpServletRequest request) {
         Products createdProduct = productsService.createProduct(product, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+        Response<Products> response = Response.<Products>builder()
+                .status(HttpStatus.CREATED.value())
+                .data(createdProduct)
+                .message("success")
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Products> updateProduct(
+    public ResponseEntity<Response<Products>> updateProduct(
             @PathVariable String id,
-            @Validated @RequestBody Products productDetails) {
-        Products updatedProduct = productsService.updateProduct(id, productDetails);
-        return ResponseEntity.ok(updatedProduct);
+            @Validated @RequestBody Products productDetails,
+            HttpServletRequest request) {
+        Response<Products> updatedProduct = productsService.updateProduct(id, productDetails, request);
+        return ResponseEntity.status(updatedProduct.getStatus()).body(updatedProduct);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-        productsService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Response<Products>> deleteProduct(@PathVariable String id, HttpServletRequest request) {
+        Response<Products> deletedProduct = productsService.deleteProduct(id, request);
+        return ResponseEntity.status(deletedProduct.getStatus()).body(deletedProduct);
     }
-
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<Response<Map<String, String>>> HandleValidationException(MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//
-//        ex.getBindingResult().getAllErrors().forEach((error) -> {
-//            String fieldName = ((FieldError) error).getField();
-//            String errorMessage = error.getDefaultMessage();
-//            errors.put(fieldName, errorMessage);
-//        });
-//
-//        Response<Map<String, String>> response = Response.<Map<String, String>>builder()
-//                .status(HttpStatus.BAD_REQUEST.value())
-//                .data(errors)
-//                .message("Validation Failed")
-//                .build();
-//
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//    }
 }
