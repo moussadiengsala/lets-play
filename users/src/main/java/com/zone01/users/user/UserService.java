@@ -27,10 +27,8 @@ public class UserService {
         return new Response<>(200, users, "Users retrieved successfully");
     }
 
-    public Response<User> getUserById(String id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.map(value -> new Response<>(200, value, "User retrieved successfully"))
-                .orElseGet(() -> new Response<>(404, null, "User not found"));
+    public Optional<User> getUserById(String id) {
+        return userRepository.findById(id);
     }
 
     public AuthenticationResponse createUser(User user) {

@@ -27,14 +27,25 @@ public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
-    @GetMapping
-    public Response<List<User>> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
     @GetMapping("/{id}")
-    public Response<User> getUserById(@PathVariable String id) {
-        return userService.getUserById(id);
+    public ResponseEntity<Response<User>> getUserById(@PathVariable String id) {
+        return userService.getUserById(id)
+                .map(user -> {
+                    Response<User> response = Response.<User>builder()
+                            .status(HttpStatus.OK.value())
+                            .data(user)
+                            .message("success")
+                            .build();
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
+                })
+                .orElseGet(() -> {
+                    Response<User> response = Response.<User>builder()
+                            .status(HttpStatus.NOT_FOUND.value())
+                            .data(null)
+                            .message("User not found")
+                            .build();
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                });
     }
 
     @PostMapping("/auth/register")
@@ -62,41 +73,20 @@ public class UserController {
     }
 
     @PostMapping("/auth/refresh-token")
-    public void refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws IOException {
-        tokenService.refreshToken(request, response);
+    public ResponseEntity<Response<AuthenticationResponse>> refreshToken(HttpServletRequest request) {
+        Response<AuthenticationResponse> response = tokenService.refreshToken(request);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @GetMapping("/validate-access")
-    public ResponseEntity<User> validateAccess() {
+    public ResponseEntity<Response<User>> validateAccess() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(currentUser);
+        Response<User> response = Response.<User>builder()
+                .status(HttpStatus.OK.value())
+                .data(currentUser)
+                .message("User has been validated successfully")
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
-    //    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    //    @ExceptionHandler(MethodArgumentNotValidException.class)
-    //    public Response<Map<String, String>> HandleValidationException(MethodArgumentNotValidException ex) {
-    //        Map<String, String> errors = new HashMap<String, String>();
-    //        ex.getBindingResult().getAllErrors().forEach((error) -> {
-    //            String fieldName = ((FieldError) error).getField();
-    //            String errorMessage = error.getDefaultMessage();
-    //            errors.put(fieldName, errorMessage);
-    //        });
-    //
-    //        return new Response<Map<String, String>>(400, errors, "");
-    //    }
-
-
-    //    @PutMapping("/{id}")
-    //    public ResponseEntity<User> updateUser(@PathVariable String id, @RequestBody User user) {
-    //        return userService.updateUser(id, user);
-    //    }
-    //
-    //    @DeleteMapping("/{id}")
-    //    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-    //        return userService.deleteUser(id);
-    //    }
 }

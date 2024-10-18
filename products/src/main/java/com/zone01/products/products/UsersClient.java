@@ -1,5 +1,6 @@
 package com.zone01.products.products;
 
+import com.zone01.products.utils.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface UsersClient {
 
     @GetMapping("/api/v1/users/validate-access")
-    User validateAccess(@RequestHeader("Authorization") String authorization);
+    Response<User> validateAccess(@RequestHeader("Authorization") String authorization);
 }
 

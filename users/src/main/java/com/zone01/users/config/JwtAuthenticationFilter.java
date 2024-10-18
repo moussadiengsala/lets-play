@@ -1,11 +1,15 @@
 package com.zone01.users.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zone01.users.utils.Response;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper jacksonObjectMapper;
 
     @Override
     protected void doFilterInternal(
@@ -43,8 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String jwt = authHeader.substring(7);
         final String userEmail = jwtService.extractUsername(jwt);
+        if (userEmail == null) {
+            setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid JWT token.");
+            return;
+        }
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -57,8 +66,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token invalid or expired.");
+                return;
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void setErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        Response<Object> errorResponse = Response.<Object>builder()
+                .status(status.value())
+                .message(message)
+                .data(null)
+                .build();
+        jacksonObjectMapper.writeValue(response.getWriter(), errorResponse);
     }
 }
