@@ -6,16 +6,21 @@ import com.zone01.products.utils.Response;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @Service
 public class ProductsService {
     private final ProductsRepository productsRepository;
+
+    @Autowired
+    public ProductsService(ProductsRepository productsRepository) {
+        this.productsRepository = productsRepository;
+    }
 
     public List<Products> getAllProducts() {
         return productsRepository.findAll();
@@ -54,20 +59,20 @@ public class ProductsService {
         }
 
         // Get the product from the optional
-        Products product = productOptional.get();
+//        Products product = productOptional.get();
 
-        // Check if the current user is authorized to update or delete this product (i.e., if they own it)
-        if (!product.getUserID().equals(currentUser.getId())) {
-            return Response.<Products>builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .data(null)
-                    .message("Unauthorized to access this product")
-                    .build();
-        }
+//        // Check if the current user is authorized to update or delete this product (i.e., if they own it)
+//        if (!product.getUserID().equals(currentUser.getId())) {
+//            return Response.<Products>builder()
+//                    .status(HttpStatus.UNAUTHORIZED.value())
+//                    .data(null)
+//                    .message("Unauthorized to access this product")
+//                    .build();
+//        }
 
         return Response.<Products>builder()
                 .status(HttpStatus.OK.value())
-                .data(product)
+                .data(productOptional.get())
                 .build();
     }
 

@@ -9,9 +9,12 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +30,7 @@ public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
+    @PostAuthorize("returnObject.body.data.id == authentication.principal.id")
     @GetMapping("/{id}")
     public ResponseEntity<Response<User>> getUserById(@PathVariable String id) {
         return userService.getUserById(id)
@@ -50,26 +54,14 @@ public class UserController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<Response<AuthenticationResponse>> createUser(@Valid @RequestBody User user) {
-        AuthenticationResponse authenticationResponse = userService.createUser(user);
-        Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
-                .status(HttpStatus.CREATED.value())
-                .data(authenticationResponse)
-                .message("User has been register successfully")
-                .build();
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        Response<AuthenticationResponse> response = userService.createUser(user);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @PostMapping("/auth/login")
     public ResponseEntity<Response<AuthenticationResponse>> authentificate(@Valid @RequestBody LoginRequest user) {
-        AuthenticationResponse authenticationResponse = userService.authentificate(user);
-        Response<AuthenticationResponse> response = Response.<AuthenticationResponse>builder()
-                .status(HttpStatus.OK.value())
-                .data(authenticationResponse)
-                .message("User has been login successfully")
-                .build();
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        Response<AuthenticationResponse> response = userService.authentificate(user);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @PostMapping("/auth/refresh-token")
@@ -78,6 +70,7 @@ public class UserController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/validate-access")
     public ResponseEntity<Response<User>> validateAccess() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -89,4 +82,25 @@ public class UserController {
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    @PreAuthorize("#id == authentication.principal.id")
+    @PutMapping("/{id}")
+    public ResponseEntity<Response<User>> updateProduct(
+            @PathVariable String id,
+            @Validated @RequestBody User productDetails,
+            HttpServletRequest request) {
+        Response<User> updatedProduct = userService.updateUser(id, productDetails);
+        return ResponseEntity.status(updatedProduct.getStatus()).body(updatedProduct);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Response<User>> deleteUser(@PathVariable String id) {
+        Response<User> deletedUser = userService.deleteUser(id);
+        return ResponseEntity.status(deletedUser.getStatus()).body(deletedUser);
+    }
+
 }
+
+// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyOTM1MTc0NiwiZXhwIjoxNzI5NDM4MTQ2fQ.TaLbsqMGBRqb4_GtaTzsjTszfUfOqlPFpI8RMjB5Bj73lHSyM4OfIvDYlSPuKYIn USER
+// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzMUBnbWFpbC5jb20iLCJpYXQiOjE3MjkzNTE5MjAsImV4cCI6MTcyOTQzODMyMH0.JQnA_h-Ygun7qqZxUm5mkCtyKw6KO8tEyAuEYunzgUi0ygqEag75kGj0oqpgqjTV

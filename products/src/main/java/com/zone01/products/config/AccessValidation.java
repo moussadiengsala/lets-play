@@ -1,6 +1,7 @@
 package com.zone01.products.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zone01.products.products.Role;
 import com.zone01.products.products.User;
 import com.zone01.products.products.UsersClient;
 import com.zone01.products.utils.Response;
@@ -33,6 +34,12 @@ public class AccessValidation extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        if ("GET".equals(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
         // Check if the request has a valid Authorization header
@@ -53,7 +60,10 @@ public class AccessValidation extends OncePerRequestFilter {
 
             // Store validated user in request attributes for downstream use
             User user = userResponse.getData();
-            log.info("User validated successfully: {}", user.getEmail());
+//            if (user.getRole() == Role.USER) {
+//                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not allowed to access this resource.");
+//                return;
+//            }
             request.setAttribute(USER, user);
 
         }  catch (FeignException.Unauthorized e) {

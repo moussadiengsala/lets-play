@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @NoArgsConstructor
@@ -33,6 +34,7 @@ public class Products {
     @Positive(message = "Price must be positive")
     private Double price;
 
+    @Field("user_id")
     private String userID;
 
 }

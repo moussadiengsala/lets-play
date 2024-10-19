@@ -42,14 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            setErrorResponse(response, "Missing or invalid Authorization header.");
             return;
         }
 
         final String jwt = authHeader.substring(7);
         final String userEmail = jwtService.extractUsername(jwt);
         if (userEmail == null) {
-            setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid JWT token.");
+            setErrorResponse(response, "Invalid JWT token.");
             return;
         }
 
@@ -67,18 +67,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                setErrorResponse(response, HttpStatus.UNAUTHORIZED, "Token invalid or expired.");
+                setErrorResponse(response, "Token invalid or expired.");
                 return;
             }
         }
         filterChain.doFilter(request, response);
     }
 
-    private void setErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setStatus(status.value());
+    private void setErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         Response<Object> errorResponse = Response.<Object>builder()
-                .status(status.value())
+                .status(HttpStatus.UNAUTHORIZED.value())
                 .message(message)
                 .data(null)
                 .build();
