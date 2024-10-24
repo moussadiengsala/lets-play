@@ -30,8 +30,14 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
-    public Optional<User> getUserById(String id) {
-        return userRepository.findById(id);
+    public Optional<UserDTO> getUserById(String id) {
+        return userRepository.findById(id)
+                .map(user -> new UserDTO(
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getRole()
+                ));
     }
 
     public Response<AuthenticationResponse> createUser(User user) {
@@ -100,10 +106,10 @@ public class UserService {
         User currentUser = (User) authentication.getPrincipal();
 
         // Find the product by its ID
-        Optional<User> productOptional = userRepository.findById(id);
+        Optional<User> userOptional = userRepository.findById(id);
 
         // Check if the product exists
-        if (productOptional.isEmpty()) {
+        if (userOptional.isEmpty()) {
             return Response.<User>builder()
                     .status(HttpStatus.NOT_FOUND.value())
                     .data(null)
@@ -111,62 +117,69 @@ public class UserService {
                     .build();
         }
 
-        // Get the product from the optional
-//        User user = productOptional.get();
-
-//        // Check if the current user is authorized to update or delete this product (i.e., if they own it)
-//        if (!user.getId().equals(currentUser.getId())) {
-//            return Response.<User>builder()
-//                    .status(HttpStatus.UNAUTHORIZED.value())
-//                    .data(null)
-//                    .message("Unauthorized to access this user info.")
-//                    .build();
-//        }
-
         return Response.<User>builder()
                 .status(HttpStatus.OK.value())
-                .data(productOptional.get())
+                .data(userOptional.get())
                 .build();
     }
 
-    public Response<User> updateUser(String id, User productDetails) {
+    public Response<UserDTO> updateUser(String id, UpdateRequest userDetails) {
 
-        // Authorize and get the product
         Response<User> authorizationResponse = authorizeAndGetUser(id);
         if (authorizationResponse.getStatus() != HttpStatus.OK.value()) {
-            return authorizationResponse;
+            return Response.<UserDTO>builder()
+                    .status(authorizationResponse.getStatus())
+                    .data(null)
+                    .message(authorizationResponse.getMessage())
+                    .build();
         }
 
         // Update product details
         User user = authorizationResponse.getData();
-        user.setName(productDetails.getName());
+        user.setName(userDetails.getName());
+        user.setRole(userDetails.getRole());
 
-        // Save updated product
         User updatedProduct = userRepository.save(user);
+        UserDTO updatedUserDTO = new UserDTO(
+                updatedProduct.getId(),
+                updatedProduct.getName(),
+                updatedProduct.getEmail(),
+                updatedProduct.getRole()
+        );
 
         // Build and return response
-        return Response.<User>builder()
+        return Response.<UserDTO>builder()
                 .status(HttpStatus.OK.value())
-                .data(updatedProduct)
+                .data(updatedUserDTO)
                 .message("User updated successfully")
                 .build();
     }
 
-    public Response<User> deleteUser(String id) {
+    public Response<UserDTO> deleteUser(String id) {
 
-        // Authorize and get the product
         Response<User> authorizationResponse = authorizeAndGetUser(id);
         if (authorizationResponse.getStatus() != HttpStatus.OK.value()) {
-            return authorizationResponse;
+            return Response.<UserDTO>builder()
+                    .status(authorizationResponse.getStatus())
+                    .data(null)
+                    .message(authorizationResponse.getMessage())
+                    .build();
         }
 
-        // Delete the product
         userRepository.deleteById(id);
 
+        User user = authorizationResponse.getData();
+        UserDTO deletedUserDTO = new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole()
+        );
+
         // Return success response
-        return Response.<User>builder()
+        return Response.<UserDTO>builder()
                 .status(HttpStatus.OK.value())
-                .data(authorizationResponse.getData())
+                .data(deletedUserDTO)
                 .message("User deleted successfully")
                 .build();
     }

@@ -7,11 +7,10 @@ import java.util.Collection;
 
 @Data
 @Builder
-public class User {
+public class UserDTO {
     private String id;
     private String name;
     private String email;
-    private String password;
     private Role role;
 
 }

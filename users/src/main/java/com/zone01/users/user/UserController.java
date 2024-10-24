@@ -30,12 +30,12 @@ public class UserController {
     private final UserService userService;
     private final TokenService tokenService;
 
-    @PostAuthorize("returnObject.body.data.id == authentication.principal.id")
+//    @PostAuthorize("returnObject.body.data != null && returnObject.body.data.id == authentication.principal.id")
     @GetMapping("/{id}")
-    public ResponseEntity<Response<User>> getUserById(@PathVariable String id) {
+    public ResponseEntity<Response<UserDTO>> getUserById(@PathVariable String id) {
         return userService.getUserById(id)
                 .map(user -> {
-                    Response<User> response = Response.<User>builder()
+                    Response<UserDTO> response = Response.<UserDTO>builder()
                             .status(HttpStatus.OK.value())
                             .data(user)
                             .message("success")
@@ -43,7 +43,7 @@ public class UserController {
                     return ResponseEntity.status(HttpStatus.OK).body(response);
                 })
                 .orElseGet(() -> {
-                    Response<User> response = Response.<User>builder()
+                    Response<UserDTO> response = Response.<UserDTO>builder()
                             .status(HttpStatus.NOT_FOUND.value())
                             .data(null)
                             .message("User not found")
@@ -70,37 +70,44 @@ public class UserController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostAuthorize("returnObject != null && returnObject.body != null && returnObject.body.data != null && returnObject.body.data.role != null && returnObject.body.data.role == T(com.zone01.users.user.Role).ADMIN")
     @GetMapping("/validate-access")
-    public ResponseEntity<Response<User>> validateAccess() {
+    public ResponseEntity<Response<UserDTO>> validateAccess() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
-        Response<User> response = Response.<User>builder()
+
+        Response<UserDTO> response = Response.<UserDTO>builder()
                 .status(HttpStatus.OK.value())
-                .data(currentUser)
+                .data(new UserDTO(
+                        currentUser.getId(),
+                        currentUser.getName(),
+                        currentUser.getEmail(),
+                        currentUser.getRole()
+                ))
                 .message("User has been validated successfully")
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PreAuthorize("#id == authentication.principal.id")
+    @PreAuthorize("#id == authentication.principal.id || hasRole(T(com.zone01.users.user.Role).ADMIN)")
     @PutMapping("/{id}")
-    public ResponseEntity<Response<User>> updateProduct(
+    public ResponseEntity<Response<UserDTO>> updateUser(
             @PathVariable String id,
-            @Validated @RequestBody User productDetails,
+            @Validated @RequestBody UpdateRequest userDetails,
             HttpServletRequest request) {
-        Response<User> updatedProduct = userService.updateUser(id, productDetails);
-        return ResponseEntity.status(updatedProduct.getStatus()).body(updatedProduct);
+        Response<UserDTO> updatedUser = userService.updateUser(id, userDetails);
+        return ResponseEntity.status(updatedUser.getStatus()).body(updatedUser);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("#id == authentication.principal.id || hasRole(T(com.zone01.users.user.Role).ADMIN)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Response<User>> deleteUser(@PathVariable String id) {
-        Response<User> deletedUser = userService.deleteUser(id);
+    public ResponseEntity<Response<UserDTO>> deleteUser(@PathVariable String id) {
+        Response<UserDTO> deletedUser = userService.deleteUser(id);
         return ResponseEntity.status(deletedUser.getStatus()).body(deletedUser);
     }
 
 }
 
-// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyOTM1MTc0NiwiZXhwIjoxNzI5NDM4MTQ2fQ.TaLbsqMGBRqb4_GtaTzsjTszfUfOqlPFpI8RMjB5Bj73lHSyM4OfIvDYlSPuKYIn USER
-// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzMUBnbWFpbC5jb20iLCJpYXQiOjE3MjkzNTE5MjAsImV4cCI6MTcyOTQzODMyMH0.JQnA_h-Ygun7qqZxUm5mkCtyKw6KO8tEyAuEYunzgUi0ygqEag75kGj0oqpgqjTV
+
+// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzMUBnbWFpbC5jb20iLCJpYXQiOjE3Mjk2OTMzNTksImV4cCI6MTcyOTc3OTc1OX0.OemvEnSNeOypjGKMh98s5yUNjwoS4-GFn20pczI3zK7lAiI1cRjQfvGcs9XaRDDN ADMIN
+// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyOTY5MzMwNiwiZXhwIjoxNzI5Nzc5NzA2fQ.kgg96tVwUSGx3aFyhvO0qF5rXi7qtYEVTonHrtCe9pn0O9pss4QgfUQk5k446Khu USER

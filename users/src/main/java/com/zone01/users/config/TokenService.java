@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -24,7 +25,6 @@ public class TokenService {
     public Response<AuthenticationResponse> refreshToken(HttpServletRequest request) {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
-        final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return Response.<AuthenticationResponse>builder()
                     .status(HttpStatus.UNAUTHORIZED.value())
@@ -34,23 +34,23 @@ public class TokenService {
         }
 
         refreshToken = authHeader.substring(7);
-        try {
-            userEmail = jwtService.extractUsername(refreshToken);
-        } catch (Exception e) {
+        Map<String, Object> extractedUserEmail = jwtService.extractUsername(refreshToken);
+        if (extractedUserEmail.get("error") != null) {
             return Response.<AuthenticationResponse>builder()
                     .status(HttpStatus.BAD_REQUEST.value())
                     .data(null)
-                    .message("Invalid token")
+                    .message((String) extractedUserEmail.get("error"))
                     .build();
         }
 
-        if (userEmail == null) {
-            return Response.<AuthenticationResponse>builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .data(null)
-                    .message("Invalid token: user information is missing")
-                    .build();
-        }
+        final String userEmail = (String) extractedUserEmail.get("data");
+//        if (userEmail == null) {
+//            return Response.<AuthenticationResponse>builder()
+//                    .status(HttpStatus.UNAUTHORIZED.value())
+//                    .data(null)
+//                    .message("Invalid token: user information is missing")
+//                    .build();
+//        }
 
         // Find the user in the repository
         Optional<User> userOptional = repository.findUserByEmail(userEmail);

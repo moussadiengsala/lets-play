@@ -3,6 +3,7 @@ package com.zone01.users.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -33,10 +34,11 @@ public class User implements UserDetails {
     private String email;
 
 //    @JsonIgnore
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     @NotBlank(message = "Password is required")
     private String password;
 
+    @NotNull
     @Field("role_user")
     private Role role;
 

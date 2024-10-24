@@ -1,21 +1,14 @@
-package com.zone01.users.config;
+package com.zone01.products.config;
 
-import com.zone01.users.utils.Response;
-import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpServletRequest;
+import com.zone01.products.utils.Response;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.naming.AuthenticationException;
@@ -68,9 +61,9 @@ public class AppExceptionsHandler {
 
     private HttpStatus getStatus(Exception ex) {
         HttpStatus status;
-        if (ex instanceof AccessDeniedException || ex instanceof AuthorizationDeniedException) {
+        if (ex instanceof AccessDeniedException) {
             status = HttpStatus.FORBIDDEN; // 403 for access denied
-        } else if (ex instanceof AuthenticationException || ex instanceof BadCredentialsException) {
+        } else if (ex instanceof AuthenticationException) {
             status = HttpStatus.UNAUTHORIZED; // 401 for authentication failures
         } else {
             status = HttpStatus.BAD_REQUEST; // Default to 500 for general errors

@@ -26,12 +26,12 @@ public class Products {
     @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
     private String name;
 
-    @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+    @NotBlank(message = "Description is required")
+    @Size(min = 10, max = 50, message = "Description must be between 10 and 50 characters")
     private String description;
 
     @NotNull(message = "Price is required")
-    @Positive(message = "Price must be positive")
+    @Positive(message = "Price must be positive or greater than zero.")
     private Double price;
 
     @Field("user_id")

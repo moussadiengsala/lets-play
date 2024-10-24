@@ -1,3 +1,4 @@
+
 package com.zone01.users.config;
 
 import io.jsonwebtoken.Claims;
@@ -27,13 +28,28 @@ public class JwtService {
     @Value("${application.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public Map<String, Object> extractUsername(String token) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+           String username = extractClaim(token, Claims::getSubject);
+           response.put("data", username);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+        }
+
+        return response;
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        if (claims == null) return null;
+        final Map<String, Object> response = extractAllClaims(token);
+
+        // Check if there was an error during claim extraction
+        if (response.get("error") != null) {
+            throw new IllegalArgumentException((String) response.get("error"));
+        }
+
+        Claims claims = (Claims) response.get("data");
         return claimsResolver.apply(claims);
     }
 
@@ -70,29 +86,49 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
+        Map<String, Object> response = extractUsername(token);
+        if (response.get("error") != null) return false;
+
+        String username = (String) response.get("data");
         return username != null && (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        Map<String, Object> response = extractExpiration(token);
+        if (response.get("error") != null) return false;
+
+        Date expiration = (Date) response.get("data");
+        return expiration.before(new Date());
     }
 
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
+    private Map<String, Object> extractExpiration(String token) {
+        Map<String, Object> response = new HashMap<>();
 
-    private Claims extractAllClaims(String token) {
         try {
-            return Jwts
+            Date expirationDate = extractClaim(token, Claims::getExpiration);
+            response.put("data", expirationDate);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+        }
+
+        return response;
+    }
+
+    private Map<String, Object> extractAllClaims(String token) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Claims claims = Jwts
                     .parser()
                     .verifyWith(getSignInKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+            response.put("data", claims);
         } catch (JwtException e) {
-            return null;
+            response.put("error", e.getMessage());
         }
+
+        return response;
     }
 
     private SecretKey getSignInKey() {

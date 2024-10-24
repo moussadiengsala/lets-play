@@ -10,6 +10,9 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=rootuser
       - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - backend
+
   mongo-express:
     image: mongo-express
     container_name: mongo-express
@@ -19,8 +22,45 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=rootuser
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
       - ME_CONFIG_MONGODB_SERVER=mongodb
+    networks:
+      - backend
+
+    # Users Microservice
+    users-service:
+      image: users-service:latest
+      container_name: users-service
+      build:
+        context: ./users
+      ports:
+        - 8083:8083
+      environment:
+        - SPRING_DATA_MONGODB_URI=mongodb://rootuser:password@mongodb:27017/users_db
+        - MONGO_INITDB_DATABASE=users_db
+      depends_on:
+        - mongodb
+      networks:
+        - backend
+
+    # Products Microservice
+    products-service:
+      image: products-service:latest
+      container_name: products-service
+      build:
+        context: ./products
+      ports:
+        - 8082:8082
+      environment:
+        - SPRING_DATA_MONGODB_URI=mongodb://rootuser:password@mongodb:27017/products_db
+        - MONGO_INITDB_DATABASE=products_db
+      depends_on:
+        - mongodb
+      networks:
+        - backend
+
 volumes:
   data: {}
 networks:
-  default:
-    name: mongodb_network
+  backend:
+    driver: bridge
+#  default:
+#    name: mongodb_network

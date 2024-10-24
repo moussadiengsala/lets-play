@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface UsersClient {
 
     @GetMapping("/api/v1/users/validate-access")
-    Response<User> validateAccess(@RequestHeader("Authorization") String authorization);
+    Response<UserDTO> validateAccess(@RequestHeader("Authorization") String authorization);
 }
 
