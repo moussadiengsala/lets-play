@@ -52,6 +52,13 @@ public class UserController {
                 });
     }
 
+    @PreAuthorize("#id == authentication.principal.id || hasRole(T(com.zone01.users.user.Role).ADMIN)")
+    @GetMapping("") // i see 404
+    public ResponseEntity<Response<List<UserDTO>>> getAllUsers() {
+        Response<List<UserDTO>> users = userService.getAllUsers();
+        return ResponseEntity.status(users.getStatus()).body(users);
+    }
+
     @PostMapping("/auth/register")
     public ResponseEntity<Response<AuthenticationResponse>> createUser(@Valid @RequestBody User user) {
         Response<AuthenticationResponse> response = userService.createUser(user);
@@ -107,7 +114,3 @@ public class UserController {
     }
 
 }
-
-
-// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzMUBnbWFpbC5jb20iLCJpYXQiOjE3Mjk2OTMzNTksImV4cCI6MTcyOTc3OTc1OX0.OemvEnSNeOypjGKMh98s5yUNjwoS4-GFn20pczI3zK7lAiI1cRjQfvGcs9XaRDDN ADMIN
-// eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtb2lzQGdtYWlsLmNvbSIsImlhdCI6MTcyOTY5MzMwNiwiZXhwIjoxNzI5Nzc5NzA2fQ.kgg96tVwUSGx3aFyhvO0qF5rXi7qtYEVTonHrtCe9pn0O9pss4QgfUQk5k446Khu USER

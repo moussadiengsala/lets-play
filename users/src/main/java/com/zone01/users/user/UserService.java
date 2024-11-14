@@ -5,6 +5,7 @@ import com.zone01.users.utils.AuthenticationResponse;
 import com.zone01.users.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -181,6 +183,23 @@ public class UserService {
                 .status(HttpStatus.OK.value())
                 .data(deletedUserDTO)
                 .message("User deleted successfully")
+                .build();
+    }
+
+    public Response<List<UserDTO>> getAllUsers() {
+        List<UserDTO> userDTOList = userRepository.findAll().stream()
+                .map(user -> new UserDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole()
+                ))
+                .collect(Collectors.toList());
+
+        return Response.<List<UserDTO>>builder()
+                .data(userDTOList)
+                .status(200)
+                .message("success")
                 .build();
     }
 }

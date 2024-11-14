@@ -55,7 +55,6 @@ public class AccessValidation extends OncePerRequestFilter {
         try {
             // Validate token and fetch user permissions from the users service
             Response<UserDTO> userResponse = usersClient.validateAccess(authHeader);
-            System.out.println(userResponse);
 
             if (userResponse == null || userResponse.getData() == null) {
                 log.warn("User validation failed: {}", userResponse != null ? userResponse.getMessage() : "No response from user service");
